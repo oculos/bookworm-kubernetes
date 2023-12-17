@@ -29,7 +29,7 @@ The configuration files on this repo assume that I am:
  - static
  - images
  - app
-- Configure your nginx file, according to https://docs.joinbookwyrm.com/reverse-proxy.html
+- Configure your nginx file, according to https://docs.joinbookwyrm.com/reverse-proxy.html. Usually, you copy `/app/nginx/production` to `default.conf`, and edit accordingly.
 - Copy redis.conf to the root of your persistant volume
 - Configure your `configMap.yml` and `secrets.yml`, as well as all the deployments, so that they point to your volume and container registry,
 - After everything is configured, deploy these:
