@@ -48,7 +48,7 @@ spec:
       volumes:
         - name: app-storage
           nfs:
-            server: 10.10.101.10
+            server: mynfsserver
             path: /mnt/VM/k8s-data/bookwyrm
       restartPolicy: Always
 status: {}
