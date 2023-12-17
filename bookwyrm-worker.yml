@@ -1,0 +1,69 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  creationTimestamp: null
+  labels:
+    app: worker
+  name: worker
+  namespace: bookwyrm
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: worker
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxSurge: 1
+      maxUnavailable: 0
+  template:
+    metadata:
+      creationTimestamp: null
+      labels:
+        app: worker
+    spec:
+      topologySpreadConstraints:
+        - maxSkew: 1
+          topologyKey: kubernetes.io/hostname
+          whenUnsatisfiable: ScheduleAnyway
+          labelSelector:
+            matchLabels:
+              app: worker    
+      containers:
+        - name: worker
+          image: "myregistry/bookwyrm:0.6.6"
+          command:
+          - celery
+          args: 
+          - -A 
+          - celerywyrm 
+          - worker 
+          - -l 
+          - info 
+          - -Q 
+          - high_priority,medium_priority,low_priority,streams,images,suggested_users,email,connectors,lists,inbox,imports,import_triggered,broadcast,misc
+          envFrom:
+          - secretRef:
+              name: secrets-bookwyrm
+          - configMapRef:
+              name: env-bookwyrm
+          volumeMounts:
+          - name: app-storage
+            mountPath: /app
+            subPath: app
+          - name: app-storage
+            mountPath: /app/static
+            subPath: static
+          - name: app-storage
+            mountPath: /app/images
+            subPath: images
+          imagePullPolicy: Always
+      volumes:
+        - name: app-storage
+          nfs:
+            server: mynfsserver
+            path: /mnt/VM/k8s-data/bookwyrm
+      restartPolicy: Always
+      imagePullSecrets:
+        - name: dockerconfigjson-github-com
+status: {}

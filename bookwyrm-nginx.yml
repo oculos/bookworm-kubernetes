@@ -1,0 +1,54 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  creationTimestamp: null
+  labels:
+    app: nginx
+  name: nginx
+  namespace: bookwyrm
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: nginx
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxSurge: 1
+      maxUnavailable: 0
+  template:
+    metadata:
+      creationTimestamp: null
+      labels:
+        app: nginx
+    spec:
+      topologySpreadConstraints:
+        - maxSkew: 1
+          topologyKey: kubernetes.io/hostname
+          whenUnsatisfiable: ScheduleAnyway
+          labelSelector:
+            matchLabels:
+              app: nginx    
+      containers:
+        - name: nginx
+          image: "nginx:1.25.2"
+          ports:
+            - containerPort: 8001
+          volumeMounts:
+          - name: app-storage
+            mountPath: /etc/nginx/conf.d
+            subPath: app/nginx
+          - name: app-storage
+            mountPath: /app/static
+            subPath: static
+          - name: app-storage
+            mountPath: /app/images
+            subPath: images
+          imagePullPolicy: Always
+      volumes:
+        - name: app-storage
+          nfs:
+            server: 10.10.101.10
+            path: /mnt/VM/k8s-data/bookwyrm
+      restartPolicy: Always
+status: {}

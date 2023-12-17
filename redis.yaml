@@ -1,0 +1,33 @@
+apiVersion: v1
+kind: Pod
+metadata:
+  name: redis
+  namespace: bookwyrm
+  labels:
+    app: redis
+spec:
+  hostname: redis
+  containers:
+  - image: redis:7.2.1
+    command:
+    - redis-server
+    args:
+    - --appendonly 
+    - "yes"
+    imagePullPolicy: IfNotPresent
+    name: redis
+    ports:
+    - containerPort: 6379
+    volumeMounts:
+    - name: redis
+      mountPath: /data
+      subPath: redis
+    - name: redis
+      mountPath: /etc/redis/redis.conf
+      subPath: redis.conf
+  volumes:
+  - name: redis
+    nfs:
+      server: mynfsserver
+      path: /mnt/VM/k8s-data/bookwyrm
+  restartPolicy: Always

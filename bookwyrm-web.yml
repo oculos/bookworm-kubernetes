@@ -1,0 +1,68 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  creationTimestamp: null
+  labels:
+    app: web
+  name: web
+  namespace: bookwyrm
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: web
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxSurge: 1
+      maxUnavailable: 0
+  template:
+    metadata:
+      creationTimestamp: null
+      labels:
+        app: web
+    spec:
+      topologySpreadConstraints:
+        - maxSkew: 1
+          topologyKey: kubernetes.io/hostname
+          whenUnsatisfiable: ScheduleAnyway
+          labelSelector:
+            matchLabels:
+              app: web    
+      containers:
+        - name: web
+          image: "myregistry/bookwyrm:0.6.6"
+          command:
+          - gunicorn 
+          args:
+          - bookwyrm.wsgi:application 
+          - --threads=8 
+          - --bind 
+          - 0.0.0.0:8000 
+          envFrom:
+          - secretRef:
+              name: secrets-bookwyrm
+          - configMapRef:
+              name: env-bookwyrm
+          ports:
+            - containerPort: 8000
+          volumeMounts:
+          - name: app-storage
+            mountPath: /app
+            subPath: app
+          - name: app-storage
+            mountPath: /app/static
+            subPath: static
+          - name: app-storage
+            mountPath: /app/images
+            subPath: images
+          imagePullPolicy: Always
+      volumes:
+        - name: app-storage
+          nfs:
+            server: mynfsserver
+            path: /mnt/VM/k8s-data/bookwyrm
+      restartPolicy: Always
+      imagePullSecrets:
+        - name: dockerconfigjson-github-com
+status: {}

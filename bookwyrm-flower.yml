@@ -1,0 +1,67 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  creationTimestamp: null
+  labels:
+    app: flower
+  name: flower
+  namespace: bookwyrm
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: flower
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxSurge: 1
+      maxUnavailable: 0
+  template:
+    metadata:
+      creationTimestamp: null
+      labels:
+        app: flower
+    spec:
+      topologySpreadConstraints:
+        - maxSkew: 1
+          topologyKey: kubernetes.io/hostname
+          whenUnsatisfiable: ScheduleAnyway
+          labelSelector:
+            matchLabels:
+              app: flower    
+      containers:
+        - name: flower
+          image: "myregistry/bookwyrm:0.6.6"
+          command:
+          - celery
+          args: 
+          - -A 
+          - celerywyrm 
+          - flower 
+          - -basic_auth=${FLOWER_USER}:${FLOWER_PASSWORD} 
+          - --url_prefix=flower
+          envFrom:
+          - secretRef:
+              name: secrets-bookwyrm
+          - configMapRef:
+              name: env-bookwyrm
+          volumeMounts:
+          - name: app-storage
+            mountPath: /app
+            subPath: app
+          - name: app-storage
+            mountPath: /app/static
+            subPath: static
+          - name: app-storage
+            mountPath: /app/images
+            subPath: images
+          imagePullPolicy: Always
+      volumes:
+        - name: app-storage
+          nfs:
+            server: mynfsserver
+            path: /mnt/VM/k8s-data/bookwyrm
+      restartPolicy: Always
+      imagePullSecrets:
+        - name: dockerconfigjson-github-com
+status: {}

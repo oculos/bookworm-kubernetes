@@ -1,0 +1,70 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  creationTimestamp: null
+  labels:
+    app: beat
+  name: beat
+  namespace: bookwyrm
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: beat
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxSurge: 1
+      maxUnavailable: 0
+  template:
+    metadata:
+      creationTimestamp: null
+      labels:
+        app: beat
+    spec:
+      topologySpreadConstraints:
+        - maxSkew: 1
+          topologyKey: kubernetes.io/hostname
+          whenUnsatisfiable: ScheduleAnyway
+          labelSelector:
+            matchLabels:
+              app: beat    
+      containers:
+        - name: beat
+          image: "myimage/bookwyrm:0.6.6"
+          command:
+          - celery
+          args: 
+          - -A 
+          - celerywyrm 
+          - beat 
+          - -l 
+          - INFO
+          - --scheduler
+          - django_celery_beat.schedulers:DatabaseScheduler
+          envFrom:
+          - secretRef:
+              name: secrets-bookwyrm
+          - configMapRef:
+              name: env-bookwyrm
+          volumeMounts:
+          - name: app-storage
+            mountPath: /app
+            subPath: app
+          - name: app-storage
+            mountPath: /app/static
+            subPath: static
+          - name: app-storage
+            mountPath: /app/images
+            subPath: images
+          imagePullPolicy: Always
+      volumes:
+        - name: app-storage
+          nfs:
+            server: mynfs
+            path: /mnt/VM/k8s-data/bookwyrm
+      restartPolicy: Always
+      imagePullSecrets:
+        - name: dockerconfigjson-github-com
+status: {}
+

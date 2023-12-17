@@ -1,0 +1,45 @@
+apiVersion: v1
+data:
+  DEBUG: "false"
+  USE_HTTPS: "true"
+  DOMAIN: myinstance.no
+  EMAIL: admin@myemail.com
+  LANGUAGE_CODE: "en-us"
+  DEFAULT_LANGUAGE: "English"
+  PGPORT: "5432"
+  POSTGRES_USER: bookwyrm
+  POSTGRES_DB: bookwyrm
+  POSTGRES_HOST: mypghost
+  MAX_STREAM_LENGTH: "200"
+  REDIS_ACTIVITY_HOST: redis
+  REDIS_ACTIVITY_PORT: "6379"
+  REDIS_ACTIVITY_DB_INDEX: "0"
+  REDIS_BROKER_HOST: redis
+  REDIS_BROKER_PORT: "6379"
+  REDIS_BROKER_DB_INDEX: "1"
+  FLOWER_PORT: "8888"
+  FLOWER_USER: admin
+  EMAIL_HOST: myemailhost.com
+  EMAIL_PORT: "587"
+  EMAIL_HOST_USER: admin@myemail.com
+  EMAIL_USE_TLS: "true"
+  EMAIL_USE_SSL: "false"
+  EMAIL_SENDER_NAME: admin
+  EMAIL_SENDER_DOMAIN: myemail.com
+  ENABLE_THUMBNAIL_GENERATION: "true"
+  USE_S3: "true"
+  AWS_STORAGE_BUCKET_NAME: bookwyrm-bucket
+  AWS_S3_CUSTOM_DOMAIN: files.myinstance.com       
+  AWS_S3_REGION_NAME: oslo      
+  AWS_S3_ENDPOINT_URL: https://mys3.com        
+  ENABLE_PREVIEW_IMAGES: "true"
+  HTTP_X_FORWARDED_PROTO: "true"
+  TWO_FACTOR_LOGIN_VALIDITY_WINDOW: "2"
+  TWO_FACTOR_LOGIN_MAX_SECONDS: "60"
+kind: ConfigMap
+metadata:
+  creationTimestamp: null
+  labels:
+    app: bookwyrm
+  name: env-bookwyrm
+  namespace: bookwyrm
