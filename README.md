@@ -1,1 +1,1 @@
-# bookworm-kubernetes
+# bookwyrm-kubernetes
